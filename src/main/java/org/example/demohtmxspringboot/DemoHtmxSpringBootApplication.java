@@ -40,7 +40,7 @@ class Initialize{
 }
 
 @Controller
-@RequestMapping(value = "/student")
+@RequestMapping(value = "student")
 class StudentController{
     private final StudentRepo studentRepo;
 
@@ -49,7 +49,7 @@ class StudentController{
     }
     @GetMapping
     String getStudents(Model model){
-        model.addAttribute("student",this.studentRepo.findAll());
+        model.addAttribute("students",this.studentRepo.findAll());
         return "student";
     }
 }
