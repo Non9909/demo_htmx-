@@ -10,9 +10,27 @@
 </head>
 <body>
 <div th:fragment="student-list" id="student-list">
-    <div th:each="student:${students}" id="student"></div>
-    <div th:text="${student.id}">ID</div>
-    <div th:text="${student.name}">ID</div>
+    <div th:each="item:${students}" id="student">
+        <span th:text="${item.id}"></span>
+        <span th:text="${item.name}"></span>
+        <span><button
+                hx-confirm="confirm delete?"
+                th:attr ="hx-delete=@{/student/{id}(id=${item.id})}"
+                hx-swap="outerHTML"
+                hx-target="closest #student"
+        >delete</button></span>
+    </div>
+</div>
+<div th:fragment="student-form" id="student-form">
+    <div>
+        <label for="new-student">new student</label>
+        <input type="text" name="new-student" id="new-student">
+        <button
+                hx-post="/student"
+                hx-include="#new-student"
+                hx-target="#student-list"
+        >submit</button>
+    </div>
 </div>
 </body>
 </html>

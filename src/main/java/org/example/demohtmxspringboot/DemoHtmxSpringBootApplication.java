@@ -1,16 +1,17 @@
 package org.example.demohtmxspringboot;
 
+import io.github.wimdeblauwe.hsbt.mvc.HtmxResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Stream;
 
@@ -24,7 +25,7 @@ public class DemoHtmxSpringBootApplication {
 }
 
 @Component
-class Initialize{
+class Initialize {
     private final StudentRepo studentRepo;
 
     public Initialize(StudentRepo studentRepo) {
@@ -35,24 +36,43 @@ class Initialize{
     public void initialize() {
         studentRepo.deleteAll();
         Stream.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J")
-                .forEach(student -> studentRepo.save(new Student(null,student)));
+                .forEach(student -> studentRepo.save(new Student(null, student)));
     }
 }
 
 @Controller
 @RequestMapping(value = "student")
-class StudentController{
+class StudentController {
     private final StudentRepo studentRepo;
 
     public StudentController(StudentRepo studentRepo) {
         this.studentRepo = studentRepo;
     }
+
     @GetMapping
-    String getStudents(Model model){
-        model.addAttribute("students",this.studentRepo.findAll());
+    String getStudents(Model model) {
+        model.addAttribute("students", this.studentRepo.findAll());
         return "student";
     }
-}
-interface StudentRepo extends CrudRepository<Student, Long> {}
 
-record Student(@Id Long id , String name){}
+    @PostMapping
+    HtmxResponse postStudent(@RequestParam("new-student") String name, Model model) {
+        studentRepo.save(new Student(null, name));
+        model.addAttribute("students", this.studentRepo.findAll());
+        return new HtmxResponse().addTemplate("student :: student-list");
+    }
+
+    @ResponseBody
+    @DeleteMapping(value = "/{id}", produces = MediaType.TEXT_HTML_VALUE)
+    String deleteStudent(@PathVariable("id") Long id) {
+        System.out.println("going to delete id: " + id);
+        this.studentRepo.deleteById(id);
+        return "";
+    }
+}
+
+interface StudentRepo extends CrudRepository<Student, Long> {
+}
+
+record Student(@Id Long id, String name) {
+}
